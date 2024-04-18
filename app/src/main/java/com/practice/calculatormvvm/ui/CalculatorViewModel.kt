@@ -53,20 +53,23 @@ class CalculatorViewModel: ViewModel() {
                 }
             }
         } else {
-            _numberInputState.update { currentState->
+            _numberInputState.update { currentState ->
                 currentState.copy(
                     numberInput = _numberInputState.value.numberInput + input
                 )
             }
         }
 
-        Log.d("CalculatorViewModel","Updated input: ${_numberInputState.value.numberInput}")
+        Log.d("CalculatorViewModel", "Updated input: ${_numberInputState.value.numberInput}")
     }
 
     private fun deleteOnClick() {
         _numberInputState.update { currentState ->
             currentState.copy(
-                numberInput = _numberInputState.value.numberInput.substring(0, _numberInputState.value.numberInput.length - 1)
+                numberInput = _numberInputState.value.numberInput.substring(
+                    0,
+                    _numberInputState.value.numberInput.length - 1
+                )
             )
         }
     }
@@ -99,8 +102,10 @@ class CalculatorViewModel: ViewModel() {
         while (i < tokens.size) {
             val token = tokens[i]
             if (token == "*" || token == "/") {
-                val left = newTokens.removeLast().toDoubleOrNull() ?: throw NumberFormatException("Illegal number format")
-                val right = tokens[i + 1].toDoubleOrNull() ?: throw NumberFormatException("Illegal number format")
+                val left = newTokens.removeLast().toDoubleOrNull()
+                    ?: throw NumberFormatException("Illegal number format")
+                val right = tokens[i + 1].toDoubleOrNull()
+                    ?: throw NumberFormatException("Illegal number format")
                 val result = if (token == "*") left * right else left / right
                 newTokens.add(result.toString())
                 i += 2 // Skip the next token which is already used
@@ -111,11 +116,13 @@ class CalculatorViewModel: ViewModel() {
         }
 
         // Process addition and subtraction
-        var result = newTokens[0].toDoubleOrNull() ?: throw NumberFormatException("Illegal number format")
+        var result =
+            newTokens[0].toDoubleOrNull() ?: throw NumberFormatException("Illegal number format")
         i = 1
         while (i < newTokens.size) {
             val operator = newTokens[i]
-            val operand = newTokens[i + 1].toDoubleOrNull() ?: throw NumberFormatException("Illegal number format")
+            val operand = newTokens[i + 1].toDoubleOrNull()
+                ?: throw NumberFormatException("Illegal number format")
             when (operator) {
                 "+" -> result += operand
                 "-" -> result -= operand
@@ -125,14 +132,4 @@ class CalculatorViewModel: ViewModel() {
 
         return result
     }
-
-    fun sendResultError(isError: Boolean, e: Exception? = null): String? {
-        return if (isError) {
-            e?.message
-        } else {
-            "Success"
-        }
-    }
-
-
 }
