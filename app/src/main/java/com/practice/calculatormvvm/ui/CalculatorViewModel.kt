@@ -7,10 +7,14 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.practice.calculatormvvm.MainActivity
 import com.practice.calculatormvvm.model.CalculatorState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.withContext
+import java.lang.NumberFormatException
 
 class CalculatorViewModel: ViewModel() {
 
@@ -23,6 +27,13 @@ class CalculatorViewModel: ViewModel() {
         updateUserInput("")
     }
 
+    suspend fun resetCalculatorState() {
+        withContext(Dispatchers.Main) {
+            delay(2000)
+            _numberInputState.value = CalculatorState()
+        }
+    }
+
     fun updateUserInput(input: String) {
         if (input == "DEL") {
             if (_numberInputState.value.numberInput.isNotEmpty()) {
@@ -30,7 +41,17 @@ class CalculatorViewModel: ViewModel() {
                 deleteOnClick()
             }
         } else if (input == "=") {
-            result = evaluateResult(expression = _numberInputState.value.numberInput)
+            try {
+                result = evaluateResult(expression = _numberInputState.value.numberInput)
+            } catch (e: Exception) {
+                Log.d(MainActivity.TAG, "Error: ${e.message}")
+                _numberInputState.update { currentState ->
+                    currentState.copy(
+                        isError = true,
+                        errorMessage = e.message!!
+                    )
+                }
+            }
         } else {
             _numberInputState.update { currentState->
                 currentState.copy(
@@ -78,8 +99,8 @@ class CalculatorViewModel: ViewModel() {
         while (i < tokens.size) {
             val token = tokens[i]
             if (token == "*" || token == "/") {
-                val left = newTokens.removeLast().toDouble()
-                val right = tokens[i + 1].toDouble()
+                val left = newTokens.removeLast().toDoubleOrNull() ?: throw NumberFormatException("Illegal number format")
+                val right = tokens[i + 1].toDoubleOrNull() ?: throw NumberFormatException("Illegal number format")
                 val result = if (token == "*") left * right else left / right
                 newTokens.add(result.toString())
                 i += 2 // Skip the next token which is already used
@@ -90,11 +111,11 @@ class CalculatorViewModel: ViewModel() {
         }
 
         // Process addition and subtraction
-        var result = newTokens[0].toDouble()
+        var result = newTokens[0].toDoubleOrNull() ?: throw NumberFormatException("Illegal number format")
         i = 1
         while (i < newTokens.size) {
             val operator = newTokens[i]
-            val operand = newTokens[i + 1].toDouble()
+            val operand = newTokens[i + 1].toDoubleOrNull() ?: throw NumberFormatException("Illegal number format")
             when (operator) {
                 "+" -> result += operand
                 "-" -> result -= operand
@@ -104,4 +125,14 @@ class CalculatorViewModel: ViewModel() {
 
         return result
     }
+
+    fun sendResultError(isError: Boolean, e: Exception? = null): String? {
+        return if (isError) {
+            e?.message
+        } else {
+            "Success"
+        }
+    }
+
+
 }

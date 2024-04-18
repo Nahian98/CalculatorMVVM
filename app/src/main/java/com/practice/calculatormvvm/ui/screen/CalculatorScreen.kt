@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -20,6 +21,8 @@ import com.practice.calculatormvvm.MainActivity
 import com.practice.calculatormvvm.ui.CalculatorViewModel
 import com.practice.calculatormvvm.ui.theme.PurpleGrey40
 import com.practice.calculatormvvm.ui.theme.PurpleGrey80
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun CalculatorContainer(calculatorViewModel: CalculatorViewModel = viewModel()) {
@@ -29,7 +32,11 @@ fun CalculatorContainer(calculatorViewModel: CalculatorViewModel = viewModel()) 
             value = calculatorInputState.numberInput,
         )
 
-        NumberOutputField(value = calculatorViewModel.result.toString())
+        NumberOutputField(
+            value = calculatorViewModel.result.toString(),
+            isError = calculatorInputState.isError,
+            errorMessage = calculatorInputState.errorMessage
+        )
 
         ButtonRows(btn1 = "sin", btn2 = "cos", btn3 = "tan", btn4 = "-", onButtonClick = { newValue ->
             calculatorViewModel.updateUserInput(newValue)
@@ -48,6 +55,12 @@ fun CalculatorContainer(calculatorViewModel: CalculatorViewModel = viewModel()) 
         })
     }
     Log.d(MainActivity.TAG, "Input: ${calculatorInputState.numberInput}")
+
+    LaunchedEffect(calculatorInputState.isError) {
+        if (calculatorInputState.isError) {
+            calculatorViewModel.resetCalculatorState()
+        }
+    }
 }
 
 @Composable
@@ -73,13 +86,18 @@ fun NumberInputField(
 
 @Composable
 fun NumberOutputField(
-    value: String
+    value: String,
+    isError: Boolean,
+    errorMessage: String
 ) {
     Text(
         modifier = Modifier
             .fillMaxWidth()
             .background(PurpleGrey80),
-        text = value,
+        text = if (!isError && errorMessage.isEmpty()) value
+                else {
+                    errorMessage
+                },
         color = Color.White,
         textAlign = TextAlign.End
     )
