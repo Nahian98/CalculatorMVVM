@@ -1,4 +1,4 @@
-package com.practice.calculatormvvm.screen
+package com.practice.calculatormvvm.ui.screen
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -17,7 +17,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.practice.calculatormvvm.MainActivity
-import com.practice.calculatormvvm.ui.theme.CalculatorViewModel
+import com.practice.calculatormvvm.ui.CalculatorViewModel
+import com.practice.calculatormvvm.ui.theme.PurpleGrey40
+import com.practice.calculatormvvm.ui.theme.PurpleGrey80
 
 @Composable
 fun CalculatorContainer(calculatorViewModel: CalculatorViewModel = viewModel()) {
@@ -62,7 +64,7 @@ fun NumberInputField(
     Text(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.Blue),
+            .background(PurpleGrey40),
         text = value,
         color = Color.White,
         textAlign = TextAlign.End
@@ -76,8 +78,10 @@ fun NumberOutputField(
     Text(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.Green),
+            .background(PurpleGrey80),
         text = value,
+        color = Color.White,
+        textAlign = TextAlign.End
     )
 }
 
